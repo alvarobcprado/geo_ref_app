@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:geo_ref/pages/home/home_page.dart';
 import 'package:geo_ref/pages/login/login_page.dart';
 
 import 'pages/splash/splash_page.dart';
@@ -19,8 +20,10 @@ class GeoRefApp extends StatelessWidget {
           primarySwatch: Colors.green,
         ),
         home: const SplashPage(),
+        //initialRoute: HomePage.routeName,
         routes: {
-          LoginPage.routeName: (ctx) => LoginPage(),
+          LoginPage.routeName: (ctx) => const LoginPage(),
+          HomePage.routeName: (ctx) => const HomePage(),
         },
       );
 }

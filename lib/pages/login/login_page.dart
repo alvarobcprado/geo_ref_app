@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geo_ref/pages/home/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -8,9 +9,23 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final loginCtrl = TextEditingController();
-  final pswdCtrl = TextEditingController();
+  final _loginCtrl = TextEditingController();
+  final _pswdCtrl = TextEditingController();
   var _showPswd = true;
+
+  @override
+  void dispose() {
+    super.dispose();
+    _loginCtrl.dispose();
+    _pswdCtrl.dispose();
+  }
+
+  void _manageLogin() {
+    if (_loginCtrl.text.isNotEmpty && _pswdCtrl.text.isNotEmpty) {
+      Navigator.of(context).pushReplacementNamed(HomePage.routeName);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
         body: Center(
@@ -28,7 +43,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 50),
                   TextField(
-                    controller: loginCtrl,
+                    controller: _loginCtrl,
                     decoration: InputDecoration(
                       isDense: true,
                       labelText: 'E-mail',
@@ -39,7 +54,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 18),
                   TextField(
-                    controller: pswdCtrl,
+                    controller: _pswdCtrl,
                     obscureText: _showPswd,
                     decoration: InputDecoration(
                       isDense: true,
@@ -57,10 +72,10 @@ class _LoginPageState extends State<LoginPage> {
                   Container(
                     width: double.infinity,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: _manageLogin,
                       style: TextButton.styleFrom(
                         backgroundColor: Theme.of(context).primaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
