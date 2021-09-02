@@ -36,9 +36,9 @@ class _LoginPageState extends State<LoginPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text(
-                    'Entre',
+                    'Login',
                     style: TextStyle(
-                      fontSize: 20,
+                      fontSize: 24,
                     ),
                   ),
                   const SizedBox(height: 50),
@@ -58,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
                     obscureText: _showPswd,
                     decoration: InputDecoration(
                       isDense: true,
-                      labelText: 'Senha',
+                      labelText: 'Password',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
