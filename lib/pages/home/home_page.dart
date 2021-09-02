@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geo_ref/pages/home/widgets/sf_map_widget.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -102,12 +103,6 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        backgroundColor: Colors.amber,
-        body: Image.asset(
-          'assets/images/fake_map.png',
-          fit: BoxFit.cover,
-          height: double.infinity,
-          width: double.infinity,
-        ),
+        body: const SfMapWidget(),
       );
 }
