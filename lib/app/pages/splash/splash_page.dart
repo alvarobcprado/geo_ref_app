@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:geo_ref/pages/login/login_page.dart';
+import 'package:geo_ref/app/pages/login/login_page.dart';
 
 class SplashPage extends StatelessWidget {
   const SplashPage({Key? key}) : super(key: key);

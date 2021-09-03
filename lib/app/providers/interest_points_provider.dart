@@ -1,34 +1,39 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:geojson/geojson.dart';
 import 'package:syncfusion_flutter_maps/maps.dart';
-
 import 'package:geopoint/geopoint.dart';
 
-class NearbyAirports {
+class InterestPointsProvider extends ChangeNotifier {
   final markers = <MapLatLng>[];
   List<GeoJsonPoint> airportsData = <GeoJsonPoint>[];
   final geo = GeoJson();
   late StreamSubscription<GeoJsonPoint> sub;
   final dataIsLoaded = Completer();
 
-  void start() {
-    loadAirports().then((_) {
-      dataIsLoaded.complete();
-    });
-    sub = geo.processedPoints.listen((point) {
-      final latLng = point.geoPoint.toLatLng()!;
-
-      // listen for the geofenced airports
-      markers.add(
-        MapLatLng(latLng.latitude, latLng.longitude),
-      );
-    });
+  @override
+  void dispose() {
+    super.dispose();
+    sub.cancel();
   }
 
-  void dispose() {
-    sub.cancel();
+  void startNearbyAirports() {
+    loadAirports().then(
+      (_) {
+        dataIsLoaded.complete();
+      },
+    );
+    sub = geo.processedPoints.listen(
+      (point) {
+        final latLng = point.geoPoint.toLatLng()!;
+        // listen for the geofenced airports
+        markers.add(
+          MapLatLng(latLng.latitude, latLng.longitude),
+        );
+      },
+    );
   }
 
   Future<void> searchNearbyAirports(MapLatLng point) async {
@@ -36,8 +41,11 @@ class NearbyAirports {
     // geofence in radius
     const kilometers = 1000;
     final geoJsonPoint = GeoJsonPoint(
-        geoPoint:
-            GeoPoint(latitude: point.latitude, longitude: point.longitude));
+      geoPoint: GeoPoint(
+        latitude: point.latitude,
+        longitude: point.longitude,
+      ),
+    );
     await geo.geofenceDistance(
         point: geoJsonPoint, points: airportsData, distance: kilometers * 1000);
   }

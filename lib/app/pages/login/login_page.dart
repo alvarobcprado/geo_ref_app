@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:geo_ref/pages/home/home_page.dart';
+import 'package:geo_ref/app/pages/home/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
