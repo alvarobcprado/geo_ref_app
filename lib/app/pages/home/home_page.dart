@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geo_ref/app/pages/home/widgets/sf_map_widget.dart';
+import 'package:geo_ref/app/providers/interest_points_provider.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -96,13 +98,21 @@ class _HomePageState extends State<HomePage> {
                 automaticallyImplyLeading: false,
                 backgroundColor: Colors.green,
               ),
-              const ListTile(
-                title: Text('Logout'),
-                leading: Icon(Icons.logout),
+              ListTile(
+                title: const Text('Logout'),
+                leading: const Icon(Icons.logout),
+                onTap: () => Navigator.of(context).pop(),
               ),
             ],
           ),
         ),
-        body: const SfMapWidget(),
+        body: MultiProvider(
+          providers: [
+            ChangeNotifierProvider(
+              create: (context) => InterestPointsProvider(),
+            )
+          ],
+          builder: (context, child) => const SfMapWidget(),
+        ),
       );
 }

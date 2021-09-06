@@ -1,17 +1,22 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:geojson/geojson.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:syncfusion_flutter_maps/maps.dart';
 import 'package:geopoint/geopoint.dart';
 
 class InterestPointsProvider extends ChangeNotifier {
-  final markers = <MapLatLng>[];
-  List<GeoJsonPoint> airportsData = <GeoJsonPoint>[];
-  final geo = GeoJson();
+  late Position currentPosition;
+  late MapLatLng markerPosition;
   late StreamSubscription<GeoJsonPoint> sub;
+  final markers = <MapLatLng>[];
+  final geo = GeoJson();
   final dataIsLoaded = Completer();
+  final mapTileLayerController = MapTileLayerController();
+  List<GeoJsonPoint> airportsData = <GeoJsonPoint>[];
 
   @override
   void dispose() {
@@ -20,6 +25,7 @@ class InterestPointsProvider extends ChangeNotifier {
   }
 
   void startNearbyAirports() {
+    //_changeIsLoading(true);
     loadAirports().then(
       (_) {
         dataIsLoaded.complete();
@@ -34,6 +40,36 @@ class InterestPointsProvider extends ChangeNotifier {
         );
       },
     );
+    // _changeIsLoading(false);
+  }
+
+  Future<void> findCurrentPosition() async {
+    //_changeIsLoading(true);
+    currentPosition = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    markerPosition =
+        MapLatLng(currentPosition.latitude, currentPosition.longitude);
+    mapTileLayerController.insertMarker(0);
+    await searchNearbyAirports(markerPosition);
+    for (final airport in markers) {
+      markerPosition = airport;
+      mapTileLayerController.insertMarker(1);
+    }
+    // _changeIsLoading(false);
+  }
+
+  Future<void> updateMarkerChange(Offset position) async {
+    markerPosition = mapTileLayerController.pixelToLatLng(position);
+    if (mapTileLayerController.markersCount > 0) {
+      mapTileLayerController.clearMarkers();
+    }
+    mapTileLayerController.insertMarker(0);
+    await searchNearbyAirports(markerPosition);
+    for (final airport in markers) {
+      markerPosition = airport;
+      mapTileLayerController.insertMarker(1);
+    }
   }
 
   Future<void> searchNearbyAirports(MapLatLng point) async {
