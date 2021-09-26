@@ -19,8 +19,8 @@ class GeoRefApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.green,
         ),
-        //home: const SplashPage(),
-        initialRoute: HomePage.routeName,
+        home: const SplashPage(),
+        //initialRoute: HomePage.routeName,
         routes: {
           LoginPage.routeName: (ctx) => const LoginPage(),
           HomePage.routeName: (ctx) => const HomePage(),
