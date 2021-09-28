@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,7 @@ import 'package:geojson/geojson.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:syncfusion_flutter_maps/maps.dart';
 import 'package:geopoint/geopoint.dart';
+import 'package:geodesy/geodesy.dart';
 
 class InterestPointsProvider extends ChangeNotifier {
   late Position currentPosition;
@@ -17,12 +19,25 @@ class InterestPointsProvider extends ChangeNotifier {
   final dataIsLoaded = Completer();
   final mapTileLayerController = MapTileLayerController();
   List<GeoJsonPoint> airportsData = <GeoJsonPoint>[];
+  List<MapLatLng> lineToNearestPoint = [];
+  num distanceBetweenNearestPoints = 0;
+  final geodesy = Geodesy();
 
   @override
   void dispose() {
     super.dispose();
     sub.cancel();
   }
+
+  String get refPointStringLat =>
+      lineToNearestPoint[0].latitude.toStringAsFixed(5);
+  String get refPointStringLng =>
+      lineToNearestPoint[0].longitude.toStringAsFixed(5);
+
+  String get nearestPointStringLat =>
+      lineToNearestPoint[1].latitude.toStringAsFixed(5);
+  String get nearestPointStringLng =>
+      lineToNearestPoint[1].longitude.toStringAsFixed(5);
 
   void startNearbyAirports() {
     //_changeIsLoading(true);
@@ -52,24 +67,61 @@ class InterestPointsProvider extends ChangeNotifier {
         MapLatLng(currentPosition.latitude, currentPosition.longitude);
     mapTileLayerController.insertMarker(0);
     await searchNearbyAirports(markerPosition);
+    await setLineToNearestPoint(markerPosition, markers);
     for (final airport in markers) {
       markerPosition = airport;
       mapTileLayerController.insertMarker(1);
     }
+    notifyListeners();
     // _changeIsLoading(false);
+  }
+
+  Future<void> setLineToNearestPoint(
+    MapLatLng initialPosition,
+    List<MapLatLng> allPoints,
+  ) async {
+    final refPosition = LatLng(
+      initialPosition.latitude,
+      initialPosition.longitude,
+    );
+
+    final allPositions = <MapLatLng, num>{};
+    allPoints.forEach(
+      (e) => allPositions[e] = geodesy.distanceBetweenTwoGeoPoints(
+        refPosition,
+        LatLng(e.latitude, e.longitude),
+      ),
+    );
+
+    distanceBetweenNearestPoints = allPositions.values.reduce(min) / 1000;
+
+    lineToNearestPoint = [
+      initialPosition,
+      allPositions.keys
+          .where(
+            (element) =>
+                allPositions[element] == allPositions.values.reduce(min),
+          )
+          .first,
+    ];
   }
 
   Future<void> updateMarkerChange(Offset position) async {
     markerPosition = mapTileLayerController.pixelToLatLng(position);
     if (mapTileLayerController.markersCount > 0) {
       mapTileLayerController.clearMarkers();
+      markers.clear();
+      lineToNearestPoint.clear();
+      notifyListeners();
     }
     mapTileLayerController.insertMarker(0);
     await searchNearbyAirports(markerPosition);
+    await setLineToNearestPoint(markerPosition, markers);
     for (final airport in markers) {
       markerPosition = airport;
       mapTileLayerController.insertMarker(1);
     }
+    notifyListeners();
   }
 
   Future<void> searchNearbyAirports(MapLatLng point) async {
