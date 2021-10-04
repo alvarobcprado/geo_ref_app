@@ -61,7 +61,12 @@ class InterestPointsProvider extends ChangeNotifier {
   }
 
   Future<void> findCurrentPosition() async {
-    //_changeIsLoading(true);
+    if (mapTileLayerController.markersCount > 0) {
+      mapTileLayerController.clearMarkers();
+      markers.clear();
+      lineToNearestPoint.clear();
+      notifyListeners();
+    }
     currentPosition = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );

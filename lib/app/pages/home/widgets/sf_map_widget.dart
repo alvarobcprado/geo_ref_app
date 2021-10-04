@@ -23,7 +23,10 @@ class _SfMapWidgetState extends State<SfMapWidget> {
     _airportsProvider =
         Provider.of<InterestPointsProvider>(context, listen: false);
     _mapTileLayerController = _airportsProvider.mapTileLayerController;
-    _mapZoomPanBehavior = MapZoomPanBehavior();
+    _mapZoomPanBehavior = MapZoomPanBehavior(
+      enableDoubleTapZooming: true,
+      zoomLevel: 5,
+    );
     _airportsProvider.startNearbyAirports();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
       _startCurrentLocation();
@@ -106,33 +109,39 @@ class _SfMapWidgetState extends State<SfMapWidget> {
       );
 
   @override
-  Widget build(BuildContext context) => Container(
-        height: double.infinity,
-        child: GestureDetector(
-          onTapUp: (tapUpDetails) async {
-            _showLoadingDialog('Buscando acidentes próximos');
-            await _airportsProvider
-                .updateMarkerChange(tapUpDetails.localPosition);
-            Navigator.of(context).pop();
-          },
-          child: SfMaps(
-            layers: [
-              MapTileLayer(
+  Widget build(BuildContext context) => Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: _startCurrentLocation,
+          child: const Icon(Icons.gps_fixed),
+        ),
+        body: Container(
+          height: double.infinity,
+          child: GestureDetector(
+            onTapUp: (tapUpDetails) async {
+              _showLoadingDialog('Buscando acidentes próximos');
+              await _airportsProvider
+                  .updateMarkerChange(tapUpDetails.localPosition);
+              Navigator.of(context).pop();
+            },
+            child: SfMaps(
+              layers: [
+                MapTileLayer(
                   controller: _mapTileLayerController,
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   initialFocalLatLng: const MapLatLng(-15.598889, -56.095),
                   initialZoomLevel: 5,
                   zoomPanBehavior: _mapZoomPanBehavior,
                   markerBuilder: (ctx, index) => MapMarker(
-                        latitude: _airportsProvider.markerPosition.latitude,
-                        longitude: _airportsProvider.markerPosition.longitude,
-                        child: Icon(
-                          index == 0
-                              ? Icons.location_on
-                              : Icons.airplanemode_on,
-                          color: index == 0 ? Colors.red : Colors.blue,
-                        ),
-                      ),
+                    latitude: _airportsProvider.markerPosition.latitude,
+                    longitude: _airportsProvider.markerPosition.longitude,
+                    child: Icon(
+                      index == 0 ? Icons.location_on : Icons.report,
+                      color: index == 0
+                          ? Colors.blue.shade900
+                          : Colors.red.shade900,
+                      size: index == 0 ? 34 : 24,
+                    ),
+                  ),
                   sublayers: [
                     MapLineLayer(
                       lines: <MapLine>{
@@ -140,7 +149,7 @@ class _SfMapWidgetState extends State<SfMapWidget> {
                             .lineToNearestPoint
                             .isNotEmpty)
                           MapLine(
-                            color: Colors.deepOrange,
+                            color: Colors.red.shade500,
                             width: 3,
                             from: Provider.of<InterestPointsProvider>(context)
                                 .lineToNearestPoint[0],
@@ -149,9 +158,11 @@ class _SfMapWidgetState extends State<SfMapWidget> {
                           ),
                       },
                       tooltipBuilder: _lineTooltipBuilder,
-                    )
-                  ]),
-            ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       );

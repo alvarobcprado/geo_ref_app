@@ -101,7 +101,8 @@ class _HomePageState extends State<HomePage> {
               ListTile(
                 title: const Text('Logout'),
                 leading: const Icon(Icons.logout),
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () =>
+                    Navigator.of(context).pushReplacementNamed('/login'),
               ),
             ],
           ),

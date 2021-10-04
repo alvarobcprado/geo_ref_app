@@ -4,6 +4,8 @@ import 'package:geo_ref/app/pages/login/login_page.dart';
 class SplashPage extends StatelessWidget {
   const SplashPage({Key? key}) : super(key: key);
 
+  static const routeName = '/splash';
+
   @override
   Widget build(BuildContext context) {
     Future.delayed(

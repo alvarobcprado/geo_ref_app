@@ -22,6 +22,7 @@ class GeoRefApp extends StatelessWidget {
         //home: const SplashPage(),
         initialRoute: HomePage.routeName,
         routes: {
+          SplashPage.routeName: (ctx) => const SplashPage(),
           LoginPage.routeName: (ctx) => const LoginPage(),
           HomePage.routeName: (ctx) => const HomePage(),
         },
