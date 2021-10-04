@@ -35,13 +35,21 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.asset(
+                      'assets/images/logo.png',
+                      height: 150,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
                   const Text(
                     'Login',
                     style: TextStyle(
                       fontSize: 24,
                     ),
                   ),
-                  const SizedBox(height: 50),
+                  const SizedBox(height: 20),
                   TextField(
                     controller: _loginCtrl,
                     decoration: InputDecoration(
