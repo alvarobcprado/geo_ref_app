@@ -97,7 +97,7 @@ class _SfMapWidgetState extends State<SfMapWidget> {
             Row(
               children: [
                 Text(
-                  'Distância: ${_airportsProvider.distanceBetweenNearestPoints.toStringAsFixed(1)}KM',
+                  'Distância: ${_airportsProvider.nearestDistance}Km',
                 ),
               ],
             ),

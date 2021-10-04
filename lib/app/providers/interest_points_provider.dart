@@ -30,14 +30,16 @@ class InterestPointsProvider extends ChangeNotifier {
   }
 
   String get refPointStringLat =>
-      lineToNearestPoint[0].latitude.toStringAsFixed(5);
+      lineToNearestPoint[0].latitude.toStringAsFixed(7);
   String get refPointStringLng =>
-      lineToNearestPoint[0].longitude.toStringAsFixed(5);
+      lineToNearestPoint[0].longitude.toStringAsFixed(7);
 
   String get nearestPointStringLat =>
-      lineToNearestPoint[1].latitude.toStringAsFixed(5);
+      lineToNearestPoint[1].latitude.toStringAsFixed(7);
   String get nearestPointStringLng =>
-      lineToNearestPoint[1].longitude.toStringAsFixed(5);
+      lineToNearestPoint[1].longitude.toStringAsFixed(7);
+
+  String get nearestDistance => distanceBetweenNearestPoints.toStringAsFixed(2);
 
   void startNearbyAirports() {
     //_changeIsLoading(true);
