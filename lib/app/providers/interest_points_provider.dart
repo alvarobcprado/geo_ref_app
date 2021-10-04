@@ -80,37 +80,40 @@ class InterestPointsProvider extends ChangeNotifier {
       mapTileLayerController.insertMarker(1);
     }
     notifyListeners();
-    // _changeIsLoading(false);
   }
 
   Future<void> setLineToNearestPoint(
     MapLatLng initialPosition,
     List<MapLatLng> allPoints,
   ) async {
-    final refPosition = LatLng(
-      initialPosition.latitude,
-      initialPosition.longitude,
-    );
+    try {
+      final refPosition = LatLng(
+        initialPosition.latitude,
+        initialPosition.longitude,
+      );
 
-    final allPositions = <MapLatLng, num>{};
-    allPoints.forEach(
-      (e) => allPositions[e] = geodesy.distanceBetweenTwoGeoPoints(
-        refPosition,
-        LatLng(e.latitude, e.longitude),
-      ),
-    );
+      final allPositions = <MapLatLng, num>{};
+      allPoints.forEach(
+        (e) => allPositions[e] = geodesy.distanceBetweenTwoGeoPoints(
+          refPosition,
+          LatLng(e.latitude, e.longitude),
+        ),
+      );
 
-    distanceBetweenNearestPoints = allPositions.values.reduce(min) / 1000;
+      distanceBetweenNearestPoints = allPositions.values.reduce(min) / 1000;
 
-    lineToNearestPoint = [
-      initialPosition,
-      allPositions.keys
-          .where(
-            (element) =>
-                allPositions[element] == allPositions.values.reduce(min),
-          )
-          .first,
-    ];
+      lineToNearestPoint = [
+        initialPosition,
+        allPositions.keys
+            .where(
+              (element) =>
+                  allPositions[element] == allPositions.values.reduce(min),
+            )
+            .first,
+      ];
+    } catch (error) {
+      throw Exception(error);
+    }
   }
 
   Future<void> updateMarkerChange(Offset position) async {

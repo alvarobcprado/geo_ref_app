@@ -25,7 +25,6 @@ class _SfMapWidgetState extends State<SfMapWidget> {
     _mapTileLayerController = _airportsProvider.mapTileLayerController;
     _mapZoomPanBehavior = MapZoomPanBehavior(
       enableDoubleTapZooming: true,
-      zoomLevel: 5,
     );
     _airportsProvider.startNearbyAirports();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
@@ -67,6 +66,39 @@ class _SfMapWidgetState extends State<SfMapWidget> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showNotFoundDialog(String notFoundText) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => AlertDialog(
+        contentPadding: const EdgeInsets.all(10),
+        insetPadding: EdgeInsets.symmetric(
+          vertical: 0,
+          horizontal: 125 - (notFoundText.length * 3),
+        ),
+        title: Text(
+          notFoundText,
+        ),
+        content: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Text(
+              'Não encontramos nenhum ponto próximo ao local designado.',
+              //textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fechar'),
+          ),
+        ],
       ),
     );
   }
@@ -118,10 +150,15 @@ class _SfMapWidgetState extends State<SfMapWidget> {
           height: double.infinity,
           child: GestureDetector(
             onTapUp: (tapUpDetails) async {
-              _showLoadingDialog('Buscando acidentes próximos');
-              await _airportsProvider
-                  .updateMarkerChange(tapUpDetails.localPosition);
-              Navigator.of(context).pop();
+              try {
+                _showLoadingDialog('Buscando acidentes próximos');
+                await _airportsProvider
+                    .updateMarkerChange(tapUpDetails.localPosition);
+                Navigator.of(context).pop();
+              } catch (error) {
+                Navigator.of(context).pop();
+                _showNotFoundDialog('Pontos não encontrados');
+              }
             },
             child: SfMaps(
               layers: [
@@ -129,7 +166,7 @@ class _SfMapWidgetState extends State<SfMapWidget> {
                   controller: _mapTileLayerController,
                   urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                   initialFocalLatLng: const MapLatLng(-15.598889, -56.095),
-                  initialZoomLevel: 5,
+                  initialZoomLevel: 10,
                   zoomPanBehavior: _mapZoomPanBehavior,
                   markerBuilder: (ctx, index) => MapMarker(
                     latitude: _airportsProvider.markerPosition.latitude,
