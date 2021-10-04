@@ -127,7 +127,7 @@ class InterestPointsProvider extends ChangeNotifier {
   Future<void> searchNearbyAirports(MapLatLng point) async {
     await dataIsLoaded.future;
     // geofence in radius
-    const kilometers = 1000;
+    const kilometers = 50;
     final geoJsonPoint = GeoJsonPoint(
       geoPoint: GeoPoint(
         latitude: point.latitude,
@@ -140,7 +140,7 @@ class InterestPointsProvider extends ChangeNotifier {
 
   Future<void> loadAirports() async {
     final data =
-        await rootBundle.loadString('assets/geo_json/airports.geojson');
+        await rootBundle.loadString('assets/geo_json/acidentsfixed.geojson');
     await geo.parse(data, disableStream: true, verbose: true);
     airportsData = geo.points;
   }
