@@ -110,7 +110,7 @@ class _SfMapWidgetState extends State<SfMapWidget> {
         height: double.infinity,
         child: GestureDetector(
           onTapUp: (tapUpDetails) async {
-            _showLoadingDialog('Buscando aeroportos');
+            _showLoadingDialog('Buscando acidentes próximos');
             await _airportsProvider
                 .updateMarkerChange(tapUpDetails.localPosition);
             Navigator.of(context).pop();
@@ -118,39 +118,39 @@ class _SfMapWidgetState extends State<SfMapWidget> {
           child: SfMaps(
             layers: [
               MapTileLayer(
-                controller: _mapTileLayerController,
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                initialFocalLatLng: const MapLatLng(-15.598889, -56.095),
-                initialZoomLevel: 5,
-                zoomPanBehavior: _mapZoomPanBehavior,
-                markerBuilder: (ctx, index) => MapMarker(
-                  latitude: _airportsProvider.markerPosition.latitude,
-                  longitude: _airportsProvider.markerPosition.longitude,
-                  child: Icon(
-                    index == 0 ? Icons.location_on : Icons.airplanemode_on,
-                    color: index == 0 ? Colors.red : Colors.blue,
-                  ),
-                ),
-                sublayers: Provider.of<InterestPointsProvider>(context)
-                        .lineToNearestPoint
-                        .isNotEmpty
-                    ? [
-                        MapLineLayer(
-                          lines: <MapLine>{
-                            MapLine(
-                              color: Colors.deepOrange,
-                              width: 3,
-                              from: Provider.of<InterestPointsProvider>(context)
-                                  .lineToNearestPoint[0],
-                              to: Provider.of<InterestPointsProvider>(context)
-                                  .lineToNearestPoint[1],
-                            ),
-                          },
-                          tooltipBuilder: _lineTooltipBuilder,
-                        )
-                      ]
-                    : [],
-              ),
+                  controller: _mapTileLayerController,
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  initialFocalLatLng: const MapLatLng(-15.598889, -56.095),
+                  initialZoomLevel: 5,
+                  zoomPanBehavior: _mapZoomPanBehavior,
+                  markerBuilder: (ctx, index) => MapMarker(
+                        latitude: _airportsProvider.markerPosition.latitude,
+                        longitude: _airportsProvider.markerPosition.longitude,
+                        child: Icon(
+                          index == 0
+                              ? Icons.location_on
+                              : Icons.airplanemode_on,
+                          color: index == 0 ? Colors.red : Colors.blue,
+                        ),
+                      ),
+                  sublayers: [
+                    MapLineLayer(
+                      lines: <MapLine>{
+                        if (Provider.of<InterestPointsProvider>(context)
+                            .lineToNearestPoint
+                            .isNotEmpty)
+                          MapLine(
+                            color: Colors.deepOrange,
+                            width: 3,
+                            from: Provider.of<InterestPointsProvider>(context)
+                                .lineToNearestPoint[0],
+                            to: Provider.of<InterestPointsProvider>(context)
+                                .lineToNearestPoint[1],
+                          ),
+                      },
+                      tooltipBuilder: _lineTooltipBuilder,
+                    )
+                  ]),
             ],
           ),
         ),
