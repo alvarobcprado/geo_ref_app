@@ -68,6 +68,43 @@ class _SfMapWidgetState extends State<SfMapWidget> {
     );
   }
 
+  Widget _lineTooltipBuilder(BuildContext context, int index) => Container(
+        padding: const EdgeInsets.only(left: 5, top: 5),
+        height: 75,
+        width: 250,
+        color: Colors.white,
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Text(
+                  'De: ${_airportsProvider.refPointStringLat}'
+                  ', ${_airportsProvider.nearestPointStringLng}',
+                  overflow: TextOverflow.clip,
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text(
+                  'Até: ${_airportsProvider.nearestPointStringLat}'
+                  ', ${_airportsProvider.nearestPointStringLng}',
+                  overflow: TextOverflow.clip,
+                ),
+              ],
+            ),
+            const Divider(),
+            Row(
+              children: [
+                Text(
+                  'Distância: ${_airportsProvider.distanceBetweenNearestPoints.toStringAsFixed(1)}KM',
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+
   @override
   Widget build(BuildContext context) => Container(
         height: double.infinity,
@@ -94,6 +131,25 @@ class _SfMapWidgetState extends State<SfMapWidget> {
                     color: index == 0 ? Colors.red : Colors.blue,
                   ),
                 ),
+                sublayers: Provider.of<InterestPointsProvider>(context)
+                        .lineToNearestPoint
+                        .isNotEmpty
+                    ? [
+                        MapLineLayer(
+                          lines: <MapLine>{
+                            MapLine(
+                              color: Colors.deepOrange,
+                              width: 3,
+                              from: Provider.of<InterestPointsProvider>(context)
+                                  .lineToNearestPoint[0],
+                              to: Provider.of<InterestPointsProvider>(context)
+                                  .lineToNearestPoint[1],
+                            ),
+                          },
+                          tooltipBuilder: _lineTooltipBuilder,
+                        )
+                      ]
+                    : [],
               ),
             ],
           ),
