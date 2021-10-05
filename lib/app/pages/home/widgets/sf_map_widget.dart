@@ -23,7 +23,9 @@ class _SfMapWidgetState extends State<SfMapWidget> {
     _airportsProvider =
         Provider.of<InterestPointsProvider>(context, listen: false);
     _mapTileLayerController = _airportsProvider.mapTileLayerController;
-    _mapZoomPanBehavior = MapZoomPanBehavior();
+    _mapZoomPanBehavior = MapZoomPanBehavior(
+      enableDoubleTapZooming: true,
+    );
     _airportsProvider.startNearbyAirports();
     WidgetsBinding.instance?.addPostFrameCallback((timeStamp) {
       _startCurrentLocation();
@@ -68,6 +70,39 @@ class _SfMapWidgetState extends State<SfMapWidget> {
     );
   }
 
+  void _showNotFoundDialog(String notFoundText) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) => AlertDialog(
+        contentPadding: const EdgeInsets.all(10),
+        insetPadding: EdgeInsets.symmetric(
+          vertical: 0,
+          horizontal: 125 - (notFoundText.length * 3),
+        ),
+        title: Text(
+          notFoundText,
+        ),
+        content: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Text(
+              'Não encontramos nenhum ponto próximo ao local designado.',
+              //textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Fechar'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _lineTooltipBuilder(BuildContext context, int index) => Container(
         padding: const EdgeInsets.only(left: 5, top: 5),
         height: 75,
@@ -97,7 +132,7 @@ class _SfMapWidgetState extends State<SfMapWidget> {
             Row(
               children: [
                 Text(
-                  'Distância: ${_airportsProvider.distanceBetweenNearestPoints.toStringAsFixed(1)}KM',
+                  'Distância: ${_airportsProvider.nearestDistance}Km',
                 ),
               ],
             ),
@@ -106,52 +141,65 @@ class _SfMapWidgetState extends State<SfMapWidget> {
       );
 
   @override
-  Widget build(BuildContext context) => Container(
-        height: double.infinity,
-        child: GestureDetector(
-          onTapUp: (tapUpDetails) async {
-            _showLoadingDialog('Buscando aeroportos');
-            await _airportsProvider
-                .updateMarkerChange(tapUpDetails.localPosition);
-            Navigator.of(context).pop();
-          },
-          child: SfMaps(
-            layers: [
-              MapTileLayer(
-                controller: _mapTileLayerController,
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                initialFocalLatLng: const MapLatLng(-15.598889, -56.095),
-                initialZoomLevel: 5,
-                zoomPanBehavior: _mapZoomPanBehavior,
-                markerBuilder: (ctx, index) => MapMarker(
-                  latitude: _airportsProvider.markerPosition.latitude,
-                  longitude: _airportsProvider.markerPosition.longitude,
-                  child: Icon(
-                    index == 0 ? Icons.location_on : Icons.airplanemode_on,
-                    color: index == 0 ? Colors.red : Colors.blue,
+  Widget build(BuildContext context) => Scaffold(
+        floatingActionButton: FloatingActionButton(
+          onPressed: _startCurrentLocation,
+          child: const Icon(Icons.gps_fixed),
+        ),
+        body: Container(
+          height: double.infinity,
+          child: GestureDetector(
+            onTapUp: (tapUpDetails) async {
+              try {
+                _showLoadingDialog('Buscando acidentes próximos');
+                await _airportsProvider
+                    .updateMarkerChange(tapUpDetails.localPosition);
+                Navigator.of(context).pop();
+              } catch (error) {
+                Navigator.of(context).pop();
+                _showNotFoundDialog('Pontos não encontrados');
+              }
+            },
+            child: SfMaps(
+              layers: [
+                MapTileLayer(
+                  controller: _mapTileLayerController,
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  initialFocalLatLng: const MapLatLng(-15.598889, -56.095),
+                  initialZoomLevel: 10,
+                  zoomPanBehavior: _mapZoomPanBehavior,
+                  markerBuilder: (ctx, index) => MapMarker(
+                    latitude: _airportsProvider.markerPosition.latitude,
+                    longitude: _airportsProvider.markerPosition.longitude,
+                    child: Icon(
+                      index == 0 ? Icons.location_on : Icons.report,
+                      color: index == 0
+                          ? Colors.blue.shade900
+                          : Colors.red.shade900,
+                      size: index == 0 ? 34 : 24,
+                    ),
                   ),
+                  sublayers: [
+                    MapLineLayer(
+                      lines: <MapLine>{
+                        if (Provider.of<InterestPointsProvider>(context)
+                            .lineToNearestPoint
+                            .isNotEmpty)
+                          MapLine(
+                            color: Colors.red.shade500,
+                            width: 3,
+                            from: Provider.of<InterestPointsProvider>(context)
+                                .lineToNearestPoint[0],
+                            to: Provider.of<InterestPointsProvider>(context)
+                                .lineToNearestPoint[1],
+                          ),
+                      },
+                      tooltipBuilder: _lineTooltipBuilder,
+                    ),
+                  ],
                 ),
-                sublayers: Provider.of<InterestPointsProvider>(context)
-                        .lineToNearestPoint
-                        .isNotEmpty
-                    ? [
-                        MapLineLayer(
-                          lines: <MapLine>{
-                            MapLine(
-                              color: Colors.deepOrange,
-                              width: 3,
-                              from: Provider.of<InterestPointsProvider>(context)
-                                  .lineToNearestPoint[0],
-                              to: Provider.of<InterestPointsProvider>(context)
-                                  .lineToNearestPoint[1],
-                            ),
-                          },
-                          tooltipBuilder: _lineTooltipBuilder,
-                        )
-                      ]
-                    : [],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );

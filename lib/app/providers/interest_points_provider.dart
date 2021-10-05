@@ -30,14 +30,16 @@ class InterestPointsProvider extends ChangeNotifier {
   }
 
   String get refPointStringLat =>
-      lineToNearestPoint[0].latitude.toStringAsFixed(5);
+      lineToNearestPoint[0].latitude.toStringAsFixed(7);
   String get refPointStringLng =>
-      lineToNearestPoint[0].longitude.toStringAsFixed(5);
+      lineToNearestPoint[0].longitude.toStringAsFixed(7);
 
   String get nearestPointStringLat =>
-      lineToNearestPoint[1].latitude.toStringAsFixed(5);
+      lineToNearestPoint[1].latitude.toStringAsFixed(7);
   String get nearestPointStringLng =>
-      lineToNearestPoint[1].longitude.toStringAsFixed(5);
+      lineToNearestPoint[1].longitude.toStringAsFixed(7);
+
+  String get nearestDistance => distanceBetweenNearestPoints.toStringAsFixed(2);
 
   void startNearbyAirports() {
     //_changeIsLoading(true);
@@ -59,7 +61,12 @@ class InterestPointsProvider extends ChangeNotifier {
   }
 
   Future<void> findCurrentPosition() async {
-    //_changeIsLoading(true);
+    if (mapTileLayerController.markersCount > 0) {
+      mapTileLayerController.clearMarkers();
+      markers.clear();
+      lineToNearestPoint.clear();
+      notifyListeners();
+    }
     currentPosition = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.high,
     );
@@ -73,37 +80,40 @@ class InterestPointsProvider extends ChangeNotifier {
       mapTileLayerController.insertMarker(1);
     }
     notifyListeners();
-    // _changeIsLoading(false);
   }
 
   Future<void> setLineToNearestPoint(
     MapLatLng initialPosition,
     List<MapLatLng> allPoints,
   ) async {
-    final refPosition = LatLng(
-      initialPosition.latitude,
-      initialPosition.longitude,
-    );
+    try {
+      final refPosition = LatLng(
+        initialPosition.latitude,
+        initialPosition.longitude,
+      );
 
-    final allPositions = <MapLatLng, num>{};
-    allPoints.forEach(
-      (e) => allPositions[e] = geodesy.distanceBetweenTwoGeoPoints(
-        refPosition,
-        LatLng(e.latitude, e.longitude),
-      ),
-    );
+      final allPositions = <MapLatLng, num>{};
+      allPoints.forEach(
+        (e) => allPositions[e] = geodesy.distanceBetweenTwoGeoPoints(
+          refPosition,
+          LatLng(e.latitude, e.longitude),
+        ),
+      );
 
-    distanceBetweenNearestPoints = allPositions.values.reduce(min) / 1000;
+      distanceBetweenNearestPoints = allPositions.values.reduce(min) / 1000;
 
-    lineToNearestPoint = [
-      initialPosition,
-      allPositions.keys
-          .where(
-            (element) =>
-                allPositions[element] == allPositions.values.reduce(min),
-          )
-          .first,
-    ];
+      lineToNearestPoint = [
+        initialPosition,
+        allPositions.keys
+            .where(
+              (element) =>
+                  allPositions[element] == allPositions.values.reduce(min),
+            )
+            .first,
+      ];
+    } catch (error) {
+      throw Exception(error);
+    }
   }
 
   Future<void> updateMarkerChange(Offset position) async {
@@ -127,7 +137,7 @@ class InterestPointsProvider extends ChangeNotifier {
   Future<void> searchNearbyAirports(MapLatLng point) async {
     await dataIsLoaded.future;
     // geofence in radius
-    const kilometers = 1000;
+    const kilometers = 50;
     final geoJsonPoint = GeoJsonPoint(
       geoPoint: GeoPoint(
         latitude: point.latitude,
@@ -140,7 +150,7 @@ class InterestPointsProvider extends ChangeNotifier {
 
   Future<void> loadAirports() async {
     final data =
-        await rootBundle.loadString('assets/geo_json/airports.geojson');
+        await rootBundle.loadString('assets/geo_json/acidentsfixed.geojson');
     await geo.parse(data, disableStream: true, verbose: true);
     airportsData = geo.points;
   }
